@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIMA AI & Multi-Tool Suite</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Three.js for 3D Interactive Rotating Globe -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    /* Dark Cyberpunk Theme & Custom Glassmorphism */
+    body {
+      background-color: #08070d;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Glass Effect Base */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    /* Animated Electricity Effect under cards */
+    .electric-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .electric-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ff0055, #ff5500, transparent);
+      animation: lightning 2s linear infinite;
+    }
+    @keyframes lightning {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #06b6d4;
+      border-radius: 4px;
+    }
+
+    /* Globe Canvas Container */
+    #globe-container {
+      width: 100%;
+      height: 280px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Tab animations */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(100px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- NAVBAR -->
+  <nav class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-cyan-500/20">
+    <div class="flex items-center space-x-3">
+      <span class="w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
+      <h1 class="text-xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500">
+        N I M A AI 💘
+      </h1>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="hidden md:flex space-x-2">
+      <button onclick="switchTab('home')" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold hover:bg-cyan-500/10 hover:text-cyan-400 transition active-tab text-cyan-400" id="btn-home">Home</button>
+      <button onclick="switchTab('chat')" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold hover:bg-cyan-500/10 hover:text-cyan-400 transition" id="btn-chat">AI Chat</button>
+      <button onclick="switchTab('tools')" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold hover:bg-cyan-500/10 hover:text-cyan-400 transition" id="btn-tools">API Tools</button>
+      <button onclick="switchTab('about')" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold hover:bg-cyan-500/10 hover:text-cyan-400 transition" id="btn-about">About</button>
+    </div>
+
+    <div class="text-xs text-gray-400 font-mono">
+      STATUS: <span class="text-green-400 font-bold">ONLINE</span>
+    </div>
+  </nav>
+
+  <!-- MOBILE NAVIGATION -->
+  <div class="md:hidden glass-panel flex justify-around py-3 border-b border-cyan-500/20 sticky top-16 z-40 text-xs">
+    <button onclick="switchTab('home')" class="text-cyan-400 font-bold">Home</button>
+    <button onclick="switchTab('chat')" class="text-gray-300">Chat</button>
+    <button onclick="switchTab('tools')" class="text-gray-300">Tools</button>
+    <button onclick="switchTab('about')" class="text-gray-300">About</button>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="container mx-auto px-4 py-6 flex-grow">
+
+    <!-- ================= HOME TAB ================= -->
+    <section id="tab-home" class="tab-content active space-y-8">
+      
+      <!-- 3D ROTATING GLOBE -->
+      <div class="glass-panel rounded-2xl p-4 text-center electric-card">
+        <h2 class="text-lg font-semibold text-cyan-400 tracking-wider mb-2">GLOBAL NETWORK SYSTEM</h2>
+        <div id="globe-container"></div>
+      </div>
+
+      <!-- WELCOME HERO CHAT BOX -->
+      <div class="glass-panel rounded-2xl p-6 electric-card max-w-3xl mx-auto border border-pink-500/30">
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+          <span class="text-xs font-mono text-gray-400">WELCOME TERMINAL</span>
+        </div>
+        <div class="space-y-3">
+          <div class="glass-panel p-4 rounded-xl text-sm border-l-4 border-pink-500">
+            <p class="text-pink-300 font-semibold mb-1">N I M A AI 💘:</p>
+            <p class="text-gray-200">සාදරයෙන් පිළිගන්නවා! 👋 මම NIMA AI Hub එක. පහළ තියෙන Multi-Tool API පද්ධතිය භාවිතයෙන් ඕනෑම දෙයක් කරගන්න පුළුවන්. සයිට් එකේ විශේෂාංග බලන්න පහලට Scroll කරන්න!</p>
+          </div>
+        </div>
+        <div class="mt-4 text-right">
+          <button onclick="switchTab('chat')" class="px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl text-xs font-bold text-white shadow-lg hover:opacity-90 transition">
+            Start Live Chat <i class="fas fa-arrow-right ml-1"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- CODE SHOWCASE & FEATURES -->
+      <div class="max-w-4xl mx-auto space-y-6">
+        <h3 class="text-xl font-bold text-center text-cyan-300 tracking-widest uppercase">System Capabilities & Code Structure</h3>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+          <!-- Code Card 1 -->
+          <div class="glass-panel p-5 rounded-2xl electric-card">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs font-mono text-cyan-400"><i class="fas fa-code mr-2"></i>AI Engine Integration</span>
+              <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded">Async JS</span>
+            </div>
+            <pre class="bg-black/50 p-3 rounded-lg text-xs text-green-400 overflow-x-auto font-mono"><code>async function fetchAIResponse(prompt) {
+  const res = await fetch(`https://dexter-apis.onrender.com/api/ai/gemini?q=${prompt}&apikey=dex_3E3RkLKtElQpBf3hThUkr1YLWJdwCUg9Vm6OXescYeDtb39O`);
+  return await res.json();
+}</code></pre>
+            <p class="text-xs text-gray-400 mt-3">High-speed Gemini & OpenAI backend engine integration for intelligent automated replies.</p>
+          </div>
+
+          <!-- Code Card 2 -->
+          <div class="glass-panel p-5 rounded-2xl electric-card">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs font-mono text-pink-400"><i class="fas fa-download mr-2"></i>Media Downloader</span>
+              <span class="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded">REST API</span>
+            </div>
+            <pre class="bg-black/50 p-3 rounded-lg text-xs text-pink-300 overflow-x-auto font-mono"><code>// TikTok & CapCut Direct Scraper
+const ttApi = "https://dexter-apis.onrender.com/api/download/tiktok?url=";
+const ccApi = "https://dexter-apis.onrender.com/api/download/capcut-v1?url=";</code></pre>
+            <p class="text-xs text-gray-400 mt-3">Extract high quality videos and assets without watermark directly into your browser.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================= CHAT TAB ================= -->
+    <section id="tab-chat" class="tab-content max-w-3xl mx-auto space-y-4">
+      
+      <!-- AI Header -->
+      <div class="glass-panel p-4 rounded-2xl flex justify-between items-center border border-cyan-500/30">
+        <div class="flex items-center space-x-3">
+          <div class="relative">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-cyan-500 flex items-center justify-center font-bold text-white shadow-lg">
+              N
+            </div>
+            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-black rounded-full"></span>
+          </div>
+          <div>
+            <h2 class="font-bold text-sm text-cyan-300">N I M A AI 💘</h2>
+            <p id="ai-status" class="text-[11px] text-green-400 font-mono">Online & Ready</p>
+          </div>
+        </div>
+
+        <!-- AI Engine Selector -->
+        <select id="chat-engine" class="bg-black/60 border border-cyan-500/40 text-xs text-cyan-300 rounded-lg p-2 focus:outline-none">
+          <option value="gemini">Gemini AI (Dexter)</option>
+          <option value="chatday">GPT-5.5 (Supun API)</option>
+          <option value="coder">Coder AI (Dexter)</option>
+          <option value="openai">OpenAI (Supun API)</option>
+        </select>
+      </div>
+
+      <!-- Chat History Area -->
+      <div id="chat-box" class="glass-panel p-4 rounded-2xl h-[420px] overflow-y-auto space-y-4 border border-white/5">
+        
+        <!-- Default Initial Message -->
+        <div class="electric-card glass-panel p-3.5 rounded-2xl max-w-[85%] border-l-2 border-green-400">
+          <div class="flex items-center space-x-2 mb-1">
+            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+            <span class="text-[11px] font-bold text-pink-400">N I M A AI 💘</span>
+          </div>
+          <p class="text-sm text-gray-200">Hello! මම N I M A AI. ඔයාට ඕනෑම ප්‍රශ්නයක් අහන්න, කෝඩින් උදව් ලබාගන්න පුළුවන්. How can I help you today?</p>
+          <div class="text-[9px] text-gray-500 mt-2 text-right tracking-tighter">nima ai</div>
+        </div>
+
+      </div>
+
+      <!-- Typing Indicator -->
+      <div id="typing-indicator" class="hidden text-xs text-cyan-400 font-mono animate-pulse px-2">
+        <i class="fas fa-circle-notch fa-spin mr-1"></i> N I M A AI is typing...
+      </div>
+
+      <!-- Chat Input Area -->
+      <form onsubmit="handleChatSubmit(event)" class="glass-panel p-2 rounded-2xl flex items-center space-x-2 border border-pink-500/20">
+        <input type="text" id="chat-input" placeholder="Type your message here..." class="flex-grow bg-transparent px-4 py-2 text-sm text-white focus:outline-none placeholder-gray-500" required />
+        <button type="submit" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+    </section>
+
+
+    <!-- ================= API TOOLS TAB ================= -->
+    <section id="tab-tools" class="tab-content space-y-6">
+      <div class="text-center max-w-xl mx-auto">
+        <h2 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500">
+          MULTIFUNCTIONAL API SUITE
+        </h2>
+        <p class="text-xs text-gray-400 mt-1">Select any tool below to test live requests</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        
+        <!-- Image Generator Tool -->
+        <div class="glass-panel p-5 rounded-2xl electric-card flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-2 text-pink-400 mb-2">
+              <i class="fas fa-image"></i>
+              <h3 class="font-bold text-sm">AI Image Generator</h3>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">Generate custom images using text prompts via Dexter API.</p>
+            <input id="img-prompt" type="text" placeholder="e.g. Cyberpunk city sunset" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white mb-2" />
+          </div>
+          <div>
+            <button onclick="runImageGen()" class="w-full py-2 bg-pink-600/30 hover:bg-pink-600/50 border border-pink-500/50 rounded-xl text-xs font-semibold transition">
+              Generate Image
+            </button>
+            <div id="img-result" class="mt-3 text-center"></div>
+          </div>
+        </div>
+
+        <!-- Weather Tool -->
+        <div class="glass-panel p-5 rounded-2xl electric-card flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-2 text-cyan-400 mb-2">
+              <i class="fas fa-cloud-sun"></i>
+              <h3 class="font-bold text-sm">Weather Info</h3>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">Fetch real-time global weather data by city name.</p>
+            <input id="weather-city" type="text" placeholder="e.g. Colombo" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white mb-2" />
+          </div>
+          <div>
+            <button onclick="runWeather()" class="w-full py-2 bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-500/50 rounded-xl text-xs font-semibold transition">
+              Get Weather
+            </button>
+            <div id="weather-result" class="mt-3 text-xs text-gray-300 font-mono"></div>
+          </div>
+        </div>
+
+        <!-- TikTok Downloader -->
+        <div class="glass-panel p-5 rounded-2xl electric-card flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-2 text-yellow-400 mb-2">
+              <i class="fab fa-tiktok"></i>
+              <h3 class="font-bold text-sm">TikTok Downloader</h3>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">Extract no-watermark TikTok videos instantly.</p>
+            <input id="tt-url" type="text" placeholder="TikTok Video URL..." class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white mb-2" />
+          </div>
+          <div>
+            <button onclick="runTikTok()" class="w-full py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-xl text-xs font-semibold transition">
+              Fetch Video
+            </button>
+            <div id="tt-result" class="mt-3 text-xs text-gray-300"></div>
+          </div>
+        </div>
+
+        <!-- Free Fire Stalker -->
+        <div class="glass-panel p-5 rounded-2xl electric-card flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-2 text-red-400 mb-2">
+              <i class="fas fa-gamepad"></i>
+              <h3 class="font-bold text-sm">Free Fire Stalker</h3>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">Fetch FF player profile stats using player ID.</p>
+            <input id="ff-id" type="text" placeholder="Enter Player UID..." class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white mb-2" />
+          </div>
+          <div>
+            <button onclick="runFFStalk()" class="w-full py-2 bg-red-600/30 hover:bg-red-600/50 border border-red-500/50 rounded-xl text-xs font-semibold transition">
+              Stalk Profile
+            </button>
+            <div id="ff-result" class="mt-3 text-xs text-gray-300 font-mono"></div>
+          </div>
+        </div>
+
+        <!-- Google Image Search -->
+        <div class="glass-panel p-5 rounded-2xl electric-card flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-2 text-green-400 mb-2">
+              <i class="fas fa-search"></i>
+              <h3 class="font-bold text-sm">Google Image Search</h3>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">Search images using Supun Image API.</p>
+            <input id="gimg-query" type="text" placeholder="Search query..." class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white mb-2" />
+          </div>
+          <div>
+            <button onclick="runGoogleImg()" class="w-full py-2 bg-green-600/30 hover:bg-green-600/50 border border-green-500/50 rounded-xl text-xs font-semibold transition">
+              Search Images
+            </button>
+            <div id="gimg-result" class="mt-3 text-xs text-gray-300"></div>
+          </div>
+        </div>
+
+        <!-- Git Reverse -->
+        <div class="glass-panel p-5 rounded-2xl electric-card flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-2 text-purple-400 mb-2">
+              <i class="fab fa-github"></i>
+              <h3 class="font-bold text-sm">Git Reverse Tool</h3>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">Analyze site repository parameters via Supun API.</p>
+            <input id="git-url" type="text" placeholder="Site URL..." class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white mb-2" />
+          </div>
+          <div>
+            <button onclick="runGitReverse()" class="w-full py-2 bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/50 rounded-xl text-xs font-semibold transition">
+              Analyze
+            </button>
+            <div id="git-result" class="mt-3 text-xs text-gray-300 font-mono"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ================= ABOUT TAB ================= -->
+    <section id="tab-about" class="tab-content max-w-2xl mx-auto">
+      <div class="glass-panel p-8 rounded-3xl electric-card space-y-6 text-center border border-cyan-500/30">
+        <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-500 p-1 shadow-2xl">
+          <div class="w-full h-full bg-black rounded-full flex items-center justify-center font-black text-2xl text-cyan-400">
+            FX
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500">
+            𝗙𝗔𝗫𝗧 𝗫
+          </h2>
+          <p class="text-xs text-cyan-400 font-mono mt-1">System Founder & Chief Developer</p>
+        </div>
+
+        <p class="text-xs text-gray-300 leading-relaxed max-w-md mx-auto">
+          Welcome to NIMA AI & Multi-Tool Suite. Built with cutting-edge glassmorphic design systems, powered by high-performance REST APIs including Dexter & Supun API suites. Hosted on Render & GitHub.
+        </p>
+
+        <div class="pt-4 border-t border-white/10 flex justify-center space-x-4 text-gray-400">
+          <span class="text-xs"><i class="fas fa-shield-alt text-green-400 mr-1"></i> Fast Latency</span>
+          <span class="text-xs"><i class="fas fa-bolt text-yellow-400 mr-1"></i> Multi-Engine AI</span>
+          <span class="text-xs"><i class="fas fa-code text-cyan-400 mr-1"></i> Open Endpoint</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="glass-panel py-4 px-6 text-center text-xs text-gray-500 border-t border-white/5 mt-auto">
+    <p>Owner: <span class="font-bold text-cyan-400">𝗙𝗔𝗫𝗧 𝗫</span> | Powered by N I M A AI 💘</p>
+  </footer>
+
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // API KEYS
+    const DEXTER_KEY = "DEXTER-PAID-PRO-C8314242";
+    const SUPUN_KEY = "supun-gu4cu5z5p5p72c2b8wa337jg";
+
+    // Navigation Switcher
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('text-cyan-400', 'active-tab'));
+      
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      const activeBtn = document.getElementById(`btn-${tabName}`);
+      if(activeBtn) activeBtn.classList.add('text-cyan-400', 'active-tab');
+    }
+
+    // ---------------- THREE.JS ROTATING GLOBE ----------------
+    function initGlobe() {
+      const container = document.getElementById('globe-container');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(renderer.domElement);
+
+      // Sphere Wireframe Globe
+      const geometry = new THREE.SphereGeometry(2, 24, 24);
+      const material = new THREE.MeshBasicMaterial({
+        color: 0x00f0ff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.35
+      });
+      const globe = new THREE.Mesh(geometry, material);
+      scene.add(globe);
+
+      // Inner Glowing Core
+      const coreGeo = new THREE.SphereGeometry(1.6, 16, 16);
+      const coreMat = new THREE.MeshBasicMaterial({
+        color: 0xff007f,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.2
+      });
+      const core = new THREE.Mesh(coreGeo, coreMat);
+      scene.add(core);
+
+      camera.position.z = 5;
+
+      function animate() {
+        requestAnimationFrame(animate);
+        globe.rotation.y += 0.005;
+        globe.rotation.x += 0.002;
+        core.rotation.y -= 0.008;
+        renderer.render(scene, camera);
+      }
+      animate();
+    }
+    window.onload = initGlobe;
+
+
+    // ---------------- AI CHAT SYSTEM ----------------
+    async function handleChatSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const query = input.value.trim();
+      if(!query) return;
+
+      const chatBox = document.getElementById('chat-box');
+      const typing = document.getElementById('typing-indicator');
+
+      // 1. Render User Message Card (No 'nima ai' tag at bottom)
+      const userCard = `
+        <div class="electric-card glass-panel p-3.5 rounded-2xl max-w-[85%] ml-auto border-r-2 border-cyan-400 bg-cyan-950/20">
+          <div class="flex items-center space-x-2 mb-1 justify-end">
+            <span class="text-[11px] font-bold text-cyan-400">YOU</span>
+            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+          </div>
+          <p class="text-sm text-gray-200">${escapeHtml(query)}</p>
+        </div>
+      `;
+      chatBox.innerHTML += userCard;
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Show Typing Indicator
+      typing.classList.remove('hidden');
+
+      // 2. Fetch Response based on selected Engine
+      const engine = document.getElementById('chat-engine').value;
+      let replyText = "Error processing request.";
+
+      try {
+        if(engine === 'gemini') {
+          const res = await fetch(`https://dexter-apis.onrender.com/api/ai/gemini?q=${encodeURIComponent(query)}&apikey=${DEXTER_KEY}`);
+          const data = await res.json();
+          replyText = data.result || data.message || JSON.stringify(data);
+        } else if(engine === 'chatday') {
+          const res = await fetch(`https://supunofc.site/api/ai/chatday/chat?prompt=${encodeURIComponent(query)}&model=openai%2Fgpt-5.5&apikey=${SUPUN_KEY}`);
+          const data = await res.json();
+          replyText = data.result || data.reply || JSON.stringify(data);
+        } else if(engine === 'coder') {
+          const res = await fetch(`https://dexter-apis.onrender.com/api/ai/coder?q=${encodeURIComponent(query)}&apikey=${DEXTER_KEY}`);
+          const data = await res.json();
+          replyText = data.result || data.response || JSON.stringify(data);
+        } else if(engine === 'openai') {
+          const res = await fetch(`https://supunofc.site/api/ai/ai/openai?q=${encodeURIComponent(query)}&apikey=${SUPUN_KEY}`);
+          const data = await res.json();
+          replyText = data.result || data.message || JSON.stringify(data);
+        }
+      } catch(err) {
+        replyText = "API Connection Error: " + err.message;
+      }
+
+      typing.classList.add('hidden');
+
+      // 3. Render AI Response Card (Has 'nima ai' bottom label)
+      const aiCard = `
+        <div class="electric-card glass-panel p-3.5 rounded-2xl max-w-[85%] border-l-2 border-pink-500 bg-pink-950/10">
+          <div class="flex items-center space-x-2 mb-1">
+            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+            <span class="text-[11px] font-bold text-pink-400">N I M A AI 💘</span>
+          </div>
+          <p class="text-sm text-gray-200 whitespace-pre-line">${escapeHtml(replyText)}</p>
+          <div class="text-[9px] text-gray-500 mt-2 text-right tracking-tighter">nima ai</div>
+        </div>
+      `;
+      chatBox.innerHTML += aiCard;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+
+    // ---------------- API TOOLS HANDLERS ----------------
+
+    // 1. Image Generator
+    async function runImageGen() {
+      const prompt = document.getElementById('img-prompt').value;
+      const resContainer = document.getElementById('img-result');
+      if(!prompt) return alert('Enter a prompt!');
+
+      resContainer.innerHTML = '<span class="text-xs text-pink-400 animate-pulse">Generating image...</span>';
+      try {
+        const url = `https://dexter-apis.onrender.com/api/image/generate?prompt=${encodeURIComponent(prompt)}&width=512&height=512&apikey=${DEXTER_KEY}`;
+        resContainer.innerHTML = `<img src="${url}" class="rounded-xl border border-pink-500/40 mx-auto mt-2 max-h-48 shadow-lg" alt="Generated" />`;
+      } catch(e) {
+        resContainer.innerText = "Failed to load image.";
+      }
+    }
+
+    // 2. Weather Tool
+    async function runWeather() {
+      const city = document.getElementById('weather-city').value;
+      const resContainer = document.getElementById('weather-result');
+      if(!city) return alert('Enter city!');
+
+      resContainer.innerText = "Loading weather...";
+      try {
+        const res = await fetch(`https://dexter-apis.onrender.com/api/info/weather?city=${encodeURIComponent(city)}&apikey=${DEXTER_KEY}`);
+        const data = await res.json();
+        resContainer.innerText = JSON.stringify(data, null, 2);
+      } catch(e) {
+        resContainer.innerText = "Error fetching weather.";
+      }
+    }
+
+    // 3. TikTok Downloader
+    async function runTikTok() {
+      const url = document.getElementById('tt-url').value;
+      const resContainer = document.getElementById('tt-result');
+      if(!url) return alert('Enter TikTok URL!');
+
+      resContainer.innerText = "Fetching video details...";
+      try {
+        const res = await fetch(`https://dexter-apis.onrender.com/api/download/tiktok?url=${encodeURIComponent(url)}&apikey=${DEXTER_KEY}`);
+        const data = await res.json();
+        if(data.result || data.url) {
+          resContainer.innerHTML = `<a href="${data.result || data.url}" target="_blank" class="text-xs text-yellow-400 underline">Download Video File</a>`;
+        } else {
+          resContainer.innerText = JSON.stringify(data);
+        }
+      } catch(e) {
+        resContainer.innerText = "Error processing video.";
+      }
+    }
+
+    // 4. Free Fire Stalker
+    async function runFFStalk() {
+      const id = document.getElementById('ff-id').value;
+      const resContainer = document.getElementById('ff-result');
+      if(!id) return alert('Enter FF UID!');
+
+      resContainer.innerText = "Stalking player...";
+      try {
+        const res = await fetch(`https://supunofc.site/api/stalker/other/ff-stalk?id=${encodeURIComponent(id)}&apikey=${SUPUN_KEY}`);
+        const data = await res.json();
+        resContainer.innerText = JSON.stringify(data, null, 2);
+      } catch(e) {
+        resContainer.innerText = "Error fetching player stats.";
+      }
+    }
+
+    // 5. Google Image Search
+    async function runGoogleImg() {
+      const q = document.getElementById('gimg-query').value;
+      const resContainer = document.getElementById('gimg-result');
+      if(!q) return alert('Enter query!');
+
+      resContainer.innerText = "Searching...";
+      try {
+        const res = await fetch(`https://supunofc.site/api/search/google-image-search/search?q=${encodeURIComponent(q)}&apikey=${SUPUN_KEY}`);
+        const data = await res.json();
+        resContainer.innerText = "Results found: " + (data.result ? data.result.length : "Done");
+      } catch(e) {
+        resContainer.innerText = "Search failed.";
+      }
+    }
+
+    // 6. Git Reverse
+    async function runGitReverse() {
+      const targetUrl = document.getElementById('git-url').value;
+      const resContainer = document.getElementById('git-result');
+      if(!targetUrl) return alert('Enter Target URL!');
+
+      resContainer.innerText = "Analyzing...";
+      try {
+        const res = await fetch(`https://supunofc.site/api/ai/gitreverse?url=${encodeURIComponent(targetUrl)}&apikey=${SUPUN_KEY}`);
+        const data = await res.json();
+        resContainer.innerText = JSON.stringify(data, null, 2);
+      } catch(e) {
+        resContainer.innerText = "Git Reverse Analysis failed.";
+      }
+    }
+
+    // Utility: HTML Escape
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
